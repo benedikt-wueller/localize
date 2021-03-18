@@ -1,3 +1,3 @@
 # localize
 
-A generic and flexible localization library for Java and Kotlin.
+A flexible and extremely lightweight localization library.
