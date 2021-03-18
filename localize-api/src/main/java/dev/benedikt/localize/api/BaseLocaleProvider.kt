@@ -76,8 +76,10 @@ abstract class BaseLocaleProvider : LocaleProvider {
         val future = CompletableFuture<String?>()
         this.executorService.submit {
             if (!this.isLoaded) {
+                // TODO: unload after some time, if not required by then.
                 this.load()
             }
+
             future.complete(this.strings[key.toLowerCase()])
         }
         return future
