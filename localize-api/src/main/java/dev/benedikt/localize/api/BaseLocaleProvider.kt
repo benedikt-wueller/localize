@@ -1,16 +1,20 @@
 package dev.benedikt.localize.api
 
-import java.lang.RuntimeException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
 
 /**
  * @author Benedikt Wüller
  */
 
-abstract class BaseLocaleProvider : LocaleProvider {
+abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadInterval: Long = 1500L) : LocaleProvider {
 
-    private val executorService = Executors.newSingleThreadExecutor()
+    private val mutex = Mutex()
 
     private var isForced = false
     private var requirements = 0
@@ -18,73 +22,106 @@ abstract class BaseLocaleProvider : LocaleProvider {
 
     private val strings = mutableMapOf<String, String>()
 
+    private var unloadJob: Job? = null
+
     override fun setForceLoad(force: Boolean) {
-        executorService.submit {
-            this.isForced = force
-            this.updateStrings()
-        }
-    }
-
-    override fun addRequired() {
-        executorService.submit {
-            if (this.requirements <= 0) {
-                this.requirements = 0
+        GlobalScope.launch {
+            mutex.withLock {
+                isForced = force
+                updateStrings()
             }
-            this.requirements += 1
-            this.updateStrings()
         }
     }
 
-    override fun removeRequired() {
-        executorService.submit {
-            this.requirements -= 1
-            if (this.requirements <= 0) {
-                this.requirements = 0
+    override fun addRequirement() {
+        GlobalScope.launch {
+            mutex.withLock {
+                if (requirements <= 0) {
+                    requirements = 0
+                }
+                requirements += 1
+                updateStrings()
             }
-            this.updateStrings()
         }
     }
 
-    private fun updateStrings() {
-        val isRequired = this.isForced || this.requirements > 0
-        if (isRequired && this.isLoaded) return
-        if (!isRequired && !this.isLoaded) return
-
-        if (isRequired) {
-            this.load()
-        } else {
-            this.unload()
+    override fun removeRequirement() {
+        GlobalScope.launch {
+            mutex.withLock {
+                requirements -= 1
+                if (requirements <= 0) {
+                    requirements = 0
+                }
+                updateStrings()
+            }
         }
     }
 
-    private fun unload() {
-        this.strings.clear()
-        this.isLoaded = false
+    private fun isRequired() = this.isForced || this.requirements > 0
+
+    private fun updateStrings() = GlobalScope.launch {
+        mutex.withLock {
+            val isRequired = isRequired()
+            if (isRequired && isLoaded) return@withLock
+            if (!isRequired && !isLoaded) return@withLock
+
+            if (isRequired) {
+                load()
+            } else {
+                scheduleUnload()
+            }
+        }
     }
 
-    private fun load() {
-        try {
-            this.unload()
-            this.strings.putAll(this.loadStrings())
-            this.isLoaded = true
-        } catch (ex: Exception) {
-            ex.printStackTrace()
+    private fun unload() = GlobalScope.launch {
+        mutex.withLock {
+            strings.clear()
+            isLoaded = false
+        }
+    }
+
+    private fun load() = GlobalScope.launch {
+        mutex.withLock {
+            if (isLoaded) {
+                if (!isRequired()) {
+                    // Start the unload countdown from the beginning.
+                    unloadJob?.cancel()
+                    unloadJob = null
+                    scheduleUnload()
+                }
+                return@withLock
+            }
+
+            isLoaded = true
+            strings.clear()
+            strings.putAll(loadStrings())
+        }
+    }
+
+    private fun scheduleUnload() {
+        if (this.unloadJob != null) return
+        this.unloadJob = GlobalScope.launch {
+            delay(this@BaseLocaleProvider.unloadInterval)
+            mutex.withLock { unload() }
         }
     }
 
     override fun getString(key: String): CompletableFuture<String?> {
         val future = CompletableFuture<String?>()
-        this.executorService.submit {
-            if (!this.isLoaded) {
-                // TODO: unload after some time, if not required by then.
-                this.load()
+        GlobalScope.launch {
+            mutex.withLock {
+                load()
+                future.complete(strings[key.toLowerCase()])
             }
-
-            future.complete(this.strings[key.toLowerCase()])
         }
         return future
     }
 
     protected abstract fun loadStrings(): Map<String, String>
+
+    protected fun finalize() {
+        this.unloadJob?.cancel()
+        this.unload()
+    }
 
 }

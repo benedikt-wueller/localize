@@ -5,10 +5,10 @@ A stupid simple, flexible and extremely lightweight localization framework for J
 ## Locale Providers
 
 For every locale you want to support, you have to provide a `LocationProvider`. Those are responsible for retrieving the translation strings and
-discarding them when no longer needed (to free memory). By default, the following providers are available:
+discarding them when no longer needed (to free memory). By default, the following providers are available in their respective modules:
 
-* `YamlLocaleProvider` (through `localize-yaml`) &mdash; Reads the strings from a yaml file using either nested keys or keys with dot notation.
-* `JsonLocaleProvider` (through `localize-json`) &mdash; Reads the strings from a json file using either nested keys or keys with dot notation.
+* `YamlLocaleProvider` (`localize-yaml`) &mdash; Reads the strings from a yaml file using either nested keys or keys with dot notation.
+* `JsonLocaleProvider` (`localize-json`) &mdash; Reads the strings from a json file using either nested keys or keys with dot notation.
 
 ### Registering Locale Providers
 

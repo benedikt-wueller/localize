@@ -19,13 +19,13 @@ interface LocaleProvider {
      * Tells the provider that one more source is requesting strings in the future.
      * If no sources requested the strings previously and the provider is not forced to load (see [setForceLoad]), they will be loaded.
      */
-    fun addRequired()
+    fun addRequirement()
 
     /**
      * Tells the provider that one less source is requesting strings in the future.
      * If no source requests the strings anymore, they will be unloaded, if the provider is not forced to load (see [setForceLoad]).
      */
-    fun removeRequired()
+    fun removeRequirement()
 
     /**
      * Returns the string corresponding to the given [key] if it exists.

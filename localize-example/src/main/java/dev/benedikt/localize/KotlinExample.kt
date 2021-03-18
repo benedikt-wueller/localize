@@ -2,6 +2,10 @@ package dev.benedikt.localize
 
 import dev.benedikt.localize.json.JsonLocaleProvider
 import dev.benedikt.localize.yaml.YamlLocaleProvider
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
 
 /**
@@ -14,5 +18,19 @@ fun main() {
 
     LocalizeService.fallbackLocale = "en_EN"
 
-    LocalizeService.translate("de_DE", "common.hello", "Bob").thenAccept(::println)
+    runBlocking {
+        repeat(100) {
+            delay(100)
+            GlobalScope.launch {
+                val time = System.currentTimeMillis()
+                LocalizeService.translate("de_DE", "common.hello", "Bob")
+                    .thenAccept(::println)
+                    .thenAccept { println("delta: " + (System.currentTimeMillis() - time)) }
+            }
+        }
+    }
+
+    runBlocking {
+        delay(15000)
+    }
 }

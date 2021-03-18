@@ -8,11 +8,11 @@ import dev.benedikt.localize.api.LocaleProvider
 data class LocaleProviderWrapper(val locale: String, val localeProvider: LocaleProvider) {
 
     init {
-        this.localeProvider.addRequired()
+        this.localeProvider.addRequirement()
     }
 
     protected fun finalize() {
-        this.localeProvider.removeRequired()
+        this.localeProvider.removeRequirement()
     }
 
 }
