@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
  * @author Benedikt Wüller
  */
 
-abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadInterval: Long = 1500L) : LocaleProvider {
+abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadInterval: Long = 2 * 60 * 1000L) : LocaleProvider {
 
     private val mutex = Mutex()
 
