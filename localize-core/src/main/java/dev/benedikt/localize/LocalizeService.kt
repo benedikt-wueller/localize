@@ -71,10 +71,6 @@ object LocalizeService {
         }
     }
 
-    fun translateSync(locale: String, key: String, vararg params: Any): String {
-        return this.translate(locale, key, *params).get()
-    }
-
     private fun getString(locale: String, key: String): CompletableFuture<String> {
         val provider = this.getLocaleProvider(locale)
 
