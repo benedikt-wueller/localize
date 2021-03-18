@@ -105,7 +105,7 @@ TranslationHelpersKt.translateSync(tenant, "common.hello", tenant.name) // block
 
 When a locale is assigned to at least one context object, the provider will preload all translation strings. The `LocalizeService` uses weak 
 references for caching context objects and their locales. When all assigned context objects are garbage collected, the provider will clear the
-loaded translations strings to free memory.
+loaded translation strings to free memory.
 
 ### Translation Format
 
