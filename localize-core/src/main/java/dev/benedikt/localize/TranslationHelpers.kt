@@ -7,11 +7,11 @@ import java.util.concurrent.CompletableFuture
  */
 
 fun Any.translate(key: String, vararg params: Any): CompletableFuture<String> {
-    return LocalizeService.translate(this, key, params)
+    return LocalizeService.translateWithContext(this, key, params)
 }
 
 fun Any.translateSync(key: String, vararg params: Any): String {
-    return LocalizeService.translate(this, key, params).get()
+    return LocalizeService.translateWithContext(this, key, params).get()
 }
 
 fun Any.setLocale(locale: String) {

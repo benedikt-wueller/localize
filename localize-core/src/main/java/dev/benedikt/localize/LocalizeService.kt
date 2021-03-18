@@ -1,5 +1,6 @@
 package dev.benedikt.localize
 
+import dev.benedikt.localize.api.LocaleProvider
 import java.util.WeakHashMap
 import java.util.concurrent.CompletableFuture
 
@@ -8,25 +9,32 @@ import java.util.concurrent.CompletableFuture
  */
 object LocalizeService {
 
-    private val localeProviders = mutableMapOf<String, BaseLocaleProvider>()
-    private val locales = WeakHashMap<Any, String>()
+    private val localeProviders = mutableMapOf<String, LocaleProvider>()
+    private val locales = WeakHashMap<Any, LocaleProviderWrapper>()
 
-    var fallbackLocale: String = "en_EN"
+    var fallbackLocale: String? = null
         set(value) {
+            if (field == value) return
             synchronized(this.localeProviders) {
-                this.localeProviders[field]?.uses?.dec()
-                field = value
-                this.localeProviders[value]?.uses?.inc()
+                field?.let { this.getLocaleProvider(it) }?.setForceLoad(false)
+                value?.let { this.getLocaleProvider(it).setForceLoad(true) }
             }
+            field = value
         }
 
-    fun putLocale(locale: String, provider: BaseLocaleProvider) {
+    fun provideLocale(locale: String, provider: LocaleProvider) {
         synchronized(this.localeProviders) {
-            this.localeProviders[locale]?.let {
-                provider.uses = it.uses
-                it.clear()
-            }
+            val currentProvider = this.findLocaleProvider(locale)
+            if (provider == currentProvider) return
+
             this.localeProviders[locale] = provider
+
+            synchronized(this.locales) {
+                if (currentProvider != null) {
+                    val affectedKeys = this.locales.filter { it.value.locale == locale }.map { it.key }
+                    affectedKeys.forEach { key -> this.setLocale(key, locale) }
+                }
+            }
         }
     }
 
@@ -37,44 +45,59 @@ object LocalizeService {
     }
 
     fun setLocale(context: Any, locale: String) {
-        if (this.getLocale(context) == locale) return
-
-        synchronized(this.localeProviders) {
-            // Tell the previous provider to reduce the number of uses and potentially unload the messages.
-            this.localeProviders[locale]?.uses?.dec()
-
-            // Set the locale for the given context.
-            this.locales[context] = locale
-
-            // Tell the provider to increase the number of uses and potentially load the messages.
-            val nextProvider = this.localeProviders[locale] ?: throw IllegalStateException("No provider has been registered for locale $locale.")
-            nextProvider.uses += 1
+        synchronized(this.locales) {
+            this.locales[context] = LocaleProviderWrapper(locale, this.getLocaleProvider(locale))
         }
     }
 
     fun getLocale(context: Any): String {
-        return this.locales[context] ?: this.fallbackLocale
+        synchronized(this.locales) {
+            return this.locales[context]?.locale ?: this.fallbackLocale ?: throw IllegalStateException("No locale has been assigned and no fallback locale has been supplied.")
+        }
     }
 
-    fun translate(context: Any, key: String, vararg params: Any): CompletableFuture<String> {
+    fun translateWithContext(context: Any, key: String, vararg params: Any): CompletableFuture<String> {
         val locale = this.getLocale(context)
-        val provider = synchronized(this.localeProviders) {
-            this.localeProviders[locale] ?: throw IllegalStateException("No provider has been registered for locale $locale.")
-        }
+        return this.translate(locale, key, params)
+    }
 
-        // Try to get the translated message for this key.
+    fun translate(locale: String, key: String, vararg params: Any): CompletableFuture<String> {
+        return this.getString(locale, key).thenApply {
+            // Replace {1}, {2}, ... with %1$s, %2$s, ...
+            it.replace(Regex("\\{(\\d+)}"), "%$1\\\$s")
+        }.thenApply {
+            // Replace placeholders with parameters.
+            String.format(it, *params)
+        }
+    }
+
+    fun translateSync(locale: String, key: String, vararg params: Any): String {
+        return this.translate(locale, key, *params).get()
+    }
+
+    private fun getString(locale: String, key: String): CompletableFuture<String> {
+        val provider = this.getLocaleProvider(locale)
+
         return provider.getString(key).thenCompose {
             if (it == null) {
-                // If there is no translated message in this locale, try the fallback locale.
-                val fallbackProvider = synchronized(this.localeProviders) {
-                    this.localeProviders[this.fallbackLocale] ?: throw IllegalStateException("No provider has been registered for fallback locale $fallbackLocale.")
-                }
-                // Use the message defined in the fallback locale or the key itself, if no message exists.
+                val fallbackProvider = this.getLocaleProvider(this.fallbackLocale ?: throw IllegalStateException("No fallback locale has been supplied."))
                 fallbackProvider.getString(key)
             } else {
                 CompletableFuture.completedFuture(it)
             }
-        }.thenApply { String.format(it ?: key, params) }
+        }.thenApply { it ?: key }
+    }
+
+    private fun findLocaleProvider(locale: String): LocaleProvider? {
+        synchronized(this.localeProviders) {
+            return this.localeProviders[locale]
+        }
+    }
+
+    private fun getLocaleProvider(locale: String): LocaleProvider {
+        synchronized(this.localeProviders) {
+            return this.localeProviders[locale] ?: throw IllegalStateException("No provider has been registered for locale $locale.")
+        }
     }
 
 }

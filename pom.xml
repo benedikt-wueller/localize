@@ -12,6 +12,9 @@
     <modules>
         <module>localize-api</module>
         <module>localize-core</module>
+        <module>localize-yaml</module>
+        <module>localize-json</module>
+        <module>localize-example</module>
     </modules>
 
     <properties>

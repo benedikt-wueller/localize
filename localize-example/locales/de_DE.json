@@ -1,0 +1,4 @@
+{
+  "common.hello": "Hallo {1}!",
+  "common.hello2": "Hallo {1} und {2}!"
+}
