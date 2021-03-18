@@ -75,8 +75,9 @@ object LocalizeService {
         val provider = this.getLocaleProvider(locale)
 
         return provider.getString(key).thenCompose {
-            if (it == null) {
-                val fallbackProvider = this.getLocaleProvider(this.fallbackLocale ?: throw IllegalStateException("No fallback locale has been supplied."))
+            val fallbackLocale = this.fallbackLocale
+            if (it == null && fallbackLocale != null) {
+                val fallbackProvider = this.getLocaleProvider(fallbackLocale)
                 fallbackProvider.getString(key)
             } else {
                 CompletableFuture.completedFuture(it)

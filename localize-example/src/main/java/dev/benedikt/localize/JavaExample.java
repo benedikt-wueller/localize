@@ -14,6 +14,9 @@ public class JavaExample {
         LocalizeService.INSTANCE.setFallbackLocale("en_EN");
 
         LocalizeService.INSTANCE.translate("de_DE", "common.hello2", "Bob", "Alice").thenAccept(System.out::println);
+
+        final Object tenant;
+        TranslationHelpersKt.setLocale(tenant, "de_DE");
     }
 
 }
