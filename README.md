@@ -151,3 +151,7 @@ Valid examples:
 "Hello %1$s!"
 "Hello {1} and %2$s!"
 ```
+
+## License
+
+The code of this project is licensed under the [GNU General Public License v3.0](./LICENSE).
