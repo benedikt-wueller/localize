@@ -10,6 +10,9 @@ import kotlin.io.path.bufferedReader
 import kotlin.io.path.isDirectory
 
 /**
+ * Provides translation strings contained in the given [paths]. The paths can be json files or directories containing json files.
+ * The translation keys can be represented using nested objects or a flat object using dot notation for it's keys.
+ *
  * @author Benedikt Wüller
  */
 class JsonLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {

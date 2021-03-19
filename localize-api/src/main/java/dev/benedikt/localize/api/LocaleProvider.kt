@@ -28,11 +28,15 @@ interface LocaleProvider {
     fun removeRequirement()
 
     /**
-     * Returns the string corresponding to the given [key] if it exists.
+     * Returns a future completing with the string corresponding to the given [key] if it exists.
      * The strings will be loaded, if they are currently unloaded. If they are loaded, the result will be returned immediately.
      */
     fun getString(key: String): CompletableFuture<String?>
 
+    /**
+     * Returns the string corresponding to the given [key] if it exists synchronously.
+     * The strings will be loaded, if they are currently unloaded.
+     */
     fun getStringSync(key: String): String? = this.getString(key).get()
 
 }

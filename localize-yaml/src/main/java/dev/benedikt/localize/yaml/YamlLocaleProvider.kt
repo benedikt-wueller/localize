@@ -8,6 +8,9 @@ import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.isDirectory
 
 /**
+ * Provides translation strings contained in the given [paths]. The paths can be yaml files or directories containing yaml files.
+ * The translation keys can be represented using nested objects or a flat object using dot notation for it's keys.
+ *
  * @author Benedikt Wüller
  */
 class YamlLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {

@@ -77,7 +77,27 @@ LocalizeService.INSTANCE.translate("en_EN", "common.hello", "Bob").thenAccept(Sy
 ```
 
 Because the strings may have to be loaded, this function returns a `CompletableFuture` containing the translated string. If you would like to wait
-for the translation synchronously, use `translate(...).get()`.
+for the translation synchronously, use `translateSync(...)` instead of `translate(...).get()` as it will be faster.
+
+There are helper functions to reduce the boiler code.
+
+```kotlin
+// Kotlin
+import dev.benedikt.localize.trans
+import dev.benedikt.localize.transSync
+
+trans("en_EN", "common.hello", "Bob").thenAccept(...) // CompletableFuture<String>
+transSync("en_EN", "common.hello", "Bob") // String
+```
+
+```java
+// Java
+import static dev.benedikt.localize.TranslationHelpersKt.trans;
+import static dev.benedikt.localize.TranslationHelpersKt.transSync;
+
+trans("en_EN", "common.hello", "Bob").thenAccept(...); // CompletableFuture<String>
+transSync("en_EN", "common.hello", "Bob"); // String
+```
 
 ### Context-based Translations
 
@@ -89,6 +109,11 @@ retrieve the locale of any object. In Java, those are replaced with static helpe
 
 ```kotlin
 // Kotlin
+import dev.benedikt.localize.setLocale
+import dev.benedikt.localize.getLocale
+import dev.benedikt.localize.translate
+import dev.benedikt.localize.translateSync
+
 tenant.setLocale("de_DE")
 tenant.getLocale() // de_DE
 tenant.translate("common.hello", tenant.name).thenAccept(...)
@@ -97,11 +122,15 @@ tenant.translateSync("common.hello", tenant.name) // blocking
 
 ```java
 // Java
-TranslationHelpersKt.setLocale(tenant, "de_DE");
-TranslationHelpersKt.getLocale(tenant); // de_DE
-TranslationHelpersKt.translate(tenant, "common.hello", tenant.name).thenAccept(...);
-TranslationHelpersKt.translateSync(tenant, "common.hello", tenant.name) // blocking
+import static dev.benedikt.localize.TranslationHelpersKt.*;
+
+setLocale(tenant, "de_DE");
+getLocale(tenant); // de_DE
+translate(tenant, "common.hello", tenant.name).thenAccept(...);
+translateSync(tenant, "common.hello", tenant.name) // blocking
 ```
+
+**Note**: The object `tenant` is an arbitrary long-living object and just used as a generic example.
 
 When a locale is assigned to at least one context object, the provider will preload all translation strings. The `LocalizeService` uses weak 
 references for caching context objects and their locales. When all assigned context objects are garbage collected, the provider will clear the

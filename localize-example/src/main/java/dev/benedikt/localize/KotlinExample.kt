@@ -2,9 +2,7 @@ package dev.benedikt.localize
 
 import dev.benedikt.localize.json.JsonLocaleProvider
 import dev.benedikt.localize.yaml.YamlLocaleProvider
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
 
