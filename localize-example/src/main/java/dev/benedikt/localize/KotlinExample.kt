@@ -14,7 +14,7 @@ import java.nio.file.Paths
 
 fun main() {
     LocalizeService.provideLocale("en_EN", YamlLocaleProvider(Paths.get("./localize-example/locales/en_EN.yaml")))
-    LocalizeService.provideLocale("de_DE", JsonLocaleProvider(Paths.get("./localize-example/locales/de_DE.json")))
+    LocalizeService.provideLocale("de_DE", JsonLocaleProvider(Paths.get("./localize-example/locales/de_DE")))
 
     LocalizeService.fallbackLocale = "en_EN"
 

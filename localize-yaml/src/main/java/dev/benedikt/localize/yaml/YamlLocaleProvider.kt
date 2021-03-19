@@ -10,23 +10,27 @@ import kotlin.io.path.isDirectory
 /**
  * @author Benedikt Wüller
  */
-class YamlLocaleProvider(private val path: Path) : BaseLocaleProvider() {
+class YamlLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {
 
     @ExperimentalPathApi
     override fun loadStrings(): Map<String, String> {
-        if (!this.path.isDirectory()) {
-            val yaml = Yaml()
-            val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(this.path))
-            return this.loadStrings(result)
+        val strings = mutableMapOf<String, String>()
+
+        this.paths.forEach { path ->
+            if (!path.isDirectory()) {
+                val yaml = Yaml()
+                val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(path))
+                strings.putAll(this.loadStrings(result))
+                return@forEach
+            }
+
+            Files.list(path).forEach {
+                val yaml = Yaml()
+                val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(it))
+                strings.putAll(this.loadStrings(result))
+            }
         }
 
-        val files = Files.list(path)
-        val strings = mutableMapOf<String, String>()
-        files.forEach {
-            val yaml = Yaml()
-            val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(it))
-            strings.putAll(this.loadStrings(result))
-        }
         return strings
     }
 
