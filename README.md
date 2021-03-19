@@ -42,8 +42,9 @@ class CustomLocaleProvider : BaseLocaleProvider() {
 
 The `LocalizeService` will make sure, that the strings are loaded or being loaded, when required.
 
+## Locales
 
-## Fallback Locale
+### Fallback Locale
 
 In most cases you probably want to define the default locale to fall back to if a given translation is not available.
 
@@ -59,6 +60,22 @@ LocalizeService.INSTANCE.setFallbackLocale("en_EN");
 
 Make sure to register the corresponding locale provider _before_ setting the fallback locale. 
 
+### Core Locales
+
+If you want the strings of some or all locales to be loaded all the time, you can mark those as **core locales**. This will block the proportional
+chunk of memory but reduces the need of translating asynchronously (i.e. loading and unloading the locales regularly).
+
+```kotlin
+// Kotlin
+LocalizeService.setCoreLocale("de_DE")
+LocalizeService.setCoreLocale("de_DE", false)
+```
+
+```java
+// Java
+LocalizeService.INSTANCE.setCoreLocale("de_DE");
+LocalizeService.INSTANCE.setCoreLocale("de_DE", false);
+```
 
 ## Translating Strings
 

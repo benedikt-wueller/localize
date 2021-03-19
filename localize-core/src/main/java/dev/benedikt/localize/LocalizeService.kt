@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture
 object LocalizeService {
 
     private val localeProviders = mutableMapOf<String, LocaleProvider>()
+    private val coreLocales = mutableSetOf<String>()
     private val locales = WeakHashMap<Any, LocaleProviderWrapper>()
 
     /**
@@ -24,7 +25,7 @@ object LocalizeService {
         set(value) {
             if (field == value) return
             synchronized(this.localeProviders) {
-                field?.let { this.getLocaleProvider(it) }?.setForceLoad(false)
+                field?.let { this.getLocaleProvider(it) }?.setForceLoad(this.coreLocales.contains(field!!))
                 value?.let { this.getLocaleProvider(it).setForceLoad(true) }
             }
             field = value
@@ -46,6 +47,22 @@ object LocalizeService {
                     val affectedKeys = this.locales.filter { it.value.locale == locale }.map { it.key }
                     affectedKeys.forEach { key -> this.setLocale(key, locale) }
                 }
+            }
+        }
+    }
+
+    /**
+     * If [isCore] is set to `true`, this locale will be held in memory at all times unless [isCore] is set to `false` in the future.
+     */
+    @JvmOverloads
+    fun setCoreLocale(locale: String, isCore: Boolean = true) {
+        synchronized(this.localeProviders) {
+            if (isCore) {
+                this.coreLocales.add(locale)
+                this.getLocaleProvider(locale).setForceLoad(true)
+            } else {
+                this.coreLocales.remove(locale)
+                this.getLocaleProvider(locale).setForceLoad(this.fallbackLocale == locale)
             }
         }
     }
