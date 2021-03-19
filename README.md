@@ -79,7 +79,7 @@ LocalizeService.INSTANCE.translate("en_EN", "common.hello", "Bob").thenAccept(Sy
 Because the strings may have to be loaded, this function returns a `CompletableFuture` containing the translated string. If you would like to wait
 for the translation synchronously, use `translateSync(...)` instead of `translate(...).get()` as it will be faster.
 
-There are helper functions to reduce the boiler code.
+There are helper functions to reduce the boiler code:
 
 ```kotlin
 // Kotlin
@@ -122,7 +122,10 @@ tenant.translateSync("common.hello", tenant.name) // blocking
 
 ```java
 // Java
-import static dev.benedikt.localize.TranslationHelpersKt.*;
+import static dev.benedikt.localize.TranslationHelpersKt.setLocale;
+import static dev.benedikt.localize.TranslationHelpersKt.getLocale;
+import static dev.benedikt.localize.TranslationHelpersKt.translate;
+import static dev.benedikt.localize.TranslationHelpersKt.translateSync;
 
 setLocale(tenant, "de_DE");
 getLocale(tenant); // de_DE
