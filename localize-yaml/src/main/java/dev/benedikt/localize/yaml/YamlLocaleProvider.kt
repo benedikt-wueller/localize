@@ -4,16 +4,30 @@ import dev.benedikt.localize.api.BaseLocaleProvider
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.isDirectory
 
 /**
  * @author Benedikt Wüller
  */
 class YamlLocaleProvider(private val path: Path) : BaseLocaleProvider() {
 
+    @ExperimentalPathApi
     override fun loadStrings(): Map<String, String> {
-        val yaml = Yaml()
-        val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(this.path))
-        return this.loadStrings(result)
+        if (!this.path.isDirectory()) {
+            val yaml = Yaml()
+            val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(this.path))
+            return this.loadStrings(result)
+        }
+
+        val files = Files.list(path)
+        val strings = mutableMapOf<String, String>()
+        files.forEach {
+            val yaml = Yaml()
+            val result = yaml.load<Map<String, Any>>(Files.newBufferedReader(it))
+            strings.putAll(this.loadStrings(result))
+        }
+        return strings
     }
 
     private fun loadStrings(map: Map<String, Any>, prefix: String? = null): Map<String, String> {

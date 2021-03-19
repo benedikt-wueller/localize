@@ -61,6 +61,11 @@ object LocalizeService {
         return this.translate(locale, key, params)
     }
 
+    fun translateSyncWithContext(context: Any, key: String, vararg params: Any): String {
+        val locale = this.getLocale(context)
+        return this.translateSync(locale, key, params)
+    }
+
     fun translate(locale: String, key: String, vararg params: Any): CompletableFuture<String> {
         return this.getString(locale, key).thenApply {
             // Replace {1}, {2}, ... with %1$s, %2$s, ...
@@ -69,6 +74,11 @@ object LocalizeService {
             // Replace placeholders with parameters.
             String.format(it, *params)
         }
+    }
+
+    fun translateSync(locale: String, key: String, vararg params: Any): String {
+        val string = this.getStringSync(locale, key).replace(Regex("\\{(\\d+)}"), "%$1\\\$s")
+        return String.format(string, *params)
     }
 
     private fun getString(locale: String, key: String): CompletableFuture<String> {
@@ -83,6 +93,14 @@ object LocalizeService {
                 CompletableFuture.completedFuture(it)
             }
         }.thenApply { it ?: key }
+    }
+
+    private fun getStringSync(locale: String, key: String): String {
+        val provider = this.getLocaleProvider(locale)
+        return provider.getStringSync(key) ?: this.fallbackLocale?.let {
+            val fallbackProvider = this.getLocaleProvider(it)
+            fallbackProvider.getStringSync(key)
+        } ?: key
     }
 
     private fun findLocaleProvider(locale: String): LocaleProvider? {

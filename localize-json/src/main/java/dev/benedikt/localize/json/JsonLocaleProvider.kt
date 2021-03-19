@@ -3,9 +3,11 @@ package dev.benedikt.localize.json
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.benedikt.localize.api.BaseLocaleProvider
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
+import kotlin.io.path.isDirectory
 
 /**
  * @author Benedikt Wüller
@@ -16,8 +18,18 @@ class JsonLocaleProvider(private val path: Path) : BaseLocaleProvider() {
 
     @ExperimentalPathApi
     override fun loadStrings(): Map<String, String> {
-        val json = this.gson.fromJson(this.path.bufferedReader(), JsonObject::class.java)
-        return this.loadStrings(json)
+        if (!this.path.isDirectory()) {
+            val json = this.gson.fromJson(this.path.bufferedReader(), JsonObject::class.java)
+            return this.loadStrings(json)
+        }
+
+        val files = Files.list(path)
+        val strings = mutableMapOf<String, String>()
+        files.forEach {
+            val json = this.gson.fromJson(it.bufferedReader(), JsonObject::class.java)
+            strings.putAll(this.loadStrings(json))
+        }
+        return strings
     }
 
     private fun loadStrings(json: JsonObject, prefix: String? = null): Map<String, String> {

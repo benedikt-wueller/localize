@@ -33,4 +33,6 @@ interface LocaleProvider {
      */
     fun getString(key: String): CompletableFuture<String?>
 
+    fun getStringSync(key: String): String? = this.getString(key).get()
+
 }

@@ -19,15 +19,18 @@ fun main() {
     LocalizeService.fallbackLocale = "en_EN"
 
     runBlocking {
-        repeat(100) {
-            delay(100)
-            GlobalScope.launch {
-                val time = System.currentTimeMillis()
-                LocalizeService.translate("de_DE", "common.hello", "Bob")
-                    .thenAccept(::println)
-                    .thenAccept { println("delta: " + (System.currentTimeMillis() - time)) }
-            }
+        println(transSync("de_DE", "common.hello2", "Bob", "Alice"))
+
+        val amount = 500_000
+        val time = System.nanoTime()
+
+        repeat(amount) {
+            println(transSync("de_DE", "common.hello", "Bob"))
         }
+
+        val delta = System.nanoTime() - time
+        val deltaMilliseconds = (delta / 10_000.0 / amount).toInt() / 100.0
+        println("$deltaMilliseconds ms per translation at $amount translations")
     }
 
     runBlocking {
