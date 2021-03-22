@@ -2,6 +2,16 @@
 
 A stupid simple, flexible and extremely lightweight localization framework for Java 1.8+.
 
+## Maven
+
+```xml
+<dependency>
+    <groupId>dev.benedikt.localize</groupId>
+    <artifactId>localize-api</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 ## Locale Providers
 
 For every locale you want to support, you have to provide a `LocationProvider`. Those are responsible for retrieving the translation strings and
