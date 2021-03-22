@@ -66,8 +66,10 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
     }
 
     override fun getStringSync(key: String): String? {
-        this.load()
-        return this.strings[key.toLowerCase()]
+        synchronized(this.strings) {
+            this.load()
+            return this.strings[key.toLowerCase()]
+        }
     }
 
     /**
@@ -105,19 +107,21 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
      * If the strings are not required and scheduled for unloading, this will reset/restart the unload task.
      */
     private fun load() {
-        if (isLoaded) {
-            if (!isRequired()) {
-                // Start the unload countdown from the beginning.
-                unloadJob?.cancel()
-                unloadJob = null
-                scheduleUnload()
+        synchronized(this.strings) {
+            if (isLoaded) {
+                if (!isRequired()) {
+                    // Start the unload countdown from the beginning.
+                    unloadJob?.cancel()
+                    unloadJob = null
+                    scheduleUnload()
+                }
+                return
             }
-            return
-        }
 
-        isLoaded = true
-        strings.clear()
-        strings.putAll(loadStrings())
+            isLoaded = true
+            strings.clear()
+            strings.putAll(loadStrings())
+        }
     }
 
     /**
