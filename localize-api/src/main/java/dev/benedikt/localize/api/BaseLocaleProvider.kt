@@ -98,8 +98,10 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
      * Unloads the cached strings.
      */
     private fun unload() {
-        strings.clear()
-        isLoaded = false
+        synchronized(this.strings) {
+            strings.clear()
+            isLoaded = false
+        }
     }
 
     /**
