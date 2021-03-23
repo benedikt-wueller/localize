@@ -13,7 +13,7 @@ import kotlin.io.path.isDirectory
  *
  * @author Benedikt Wüller
  */
-class YamlLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {
+open class YamlLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {
 
     @ExperimentalPathApi
     override fun loadStrings(): Map<String, String> {
@@ -37,7 +37,7 @@ class YamlLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() 
         return strings
     }
 
-    private fun loadStrings(map: Map<String, Any>, prefix: String? = null): Map<String, String> {
+    protected fun loadStrings(map: Map<String, Any>, prefix: String? = null): Map<String, String> {
         val strings = mutableMapOf<String, String>()
 
         map.forEach { (key, value) ->

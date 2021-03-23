@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * @author Benedikt Wüller
  */
 
-abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadInterval: Long = 60 * 1000L) : LocaleProvider {
+abstract class BaseLocaleProvider @JvmOverloads constructor(var unloadInterval: Long = 60 * 1000L) : LocaleProvider {
 
     private val executorService = Executors.newFixedThreadPool(1) {
         val thread = Executors.defaultThreadFactory().newThread(it)
@@ -135,6 +135,13 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
         this.unloadJob = GlobalScope.launch {
             delay(unloadInterval)
             executorService.submit(::unload)
+        }
+    }
+
+    override fun reload() {
+        synchronized(this.strings) {
+            this.unload()
+            this.load()
         }
     }
 
