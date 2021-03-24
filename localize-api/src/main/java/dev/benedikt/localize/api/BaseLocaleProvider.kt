@@ -81,16 +81,14 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(var unloadInterval: 
      * Makes sure the strings are loaded asynchronously if required and unloaded if no longer required.
      */
     private fun updateStrings() {
-        this.executorService.submit {
-            val isRequired = isRequired()
-            if (isRequired && isLoaded) return@submit
-            if (!isRequired && !isLoaded) return@submit
+        val isRequired = isRequired()
+        if (isRequired && isLoaded) return
+        if (!isRequired && !isLoaded) return
 
-            if (isRequired) {
-                load()
-            } else {
-                scheduleUnload()
-            }
+        if (isRequired) {
+            load()
+        } else {
+            scheduleUnload()
         }
     }
 
@@ -139,9 +137,11 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(var unloadInterval: 
     }
 
     override fun reload() {
-        synchronized(this.strings) {
-            this.unload()
-            this.load()
+        this.executorService.submit {
+            synchronized(this.strings) {
+                this.unload()
+                this.updateStrings()
+            }
         }
     }
 
