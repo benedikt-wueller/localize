@@ -8,7 +8,7 @@ A stupid simple, flexible and extremely lightweight localization framework for J
 <dependency>
     <groupId>dev.benedikt.localize</groupId>
     <artifactId>localize-api</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
