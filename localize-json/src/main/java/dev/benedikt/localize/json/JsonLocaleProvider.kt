@@ -1,5 +1,6 @@
 package dev.benedikt.localize.json
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.benedikt.localize.api.BaseLocaleProvider
@@ -15,9 +16,9 @@ import kotlin.io.path.isDirectory
  *
  * @author Benedikt Wüller
  */
-class JsonLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {
+open class JsonLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() {
 
-    private val gson = GsonBuilder().create()
+    protected val gson: Gson = GsonBuilder().create()
 
     @ExperimentalPathApi
     override fun loadStrings(): Map<String, String> {
@@ -39,7 +40,7 @@ class JsonLocaleProvider(private vararg val paths: Path) : BaseLocaleProvider() 
         return strings
     }
 
-    private fun loadStrings(json: JsonObject, prefix: String? = null): Map<String, String> {
+    protected fun loadStrings(json: JsonObject, prefix: String? = null): Map<String, String> {
         val strings = mutableMapOf<String, String>()
 
         json.keySet().forEach { key ->

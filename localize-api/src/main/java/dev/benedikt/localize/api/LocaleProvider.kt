@@ -34,6 +34,11 @@ interface LocaleProvider {
     fun removeRequirement()
 
     /**
+     * Removes all cached strings and reloads them if necessary (i.e. required or forced).
+     */
+    fun reload()
+
+    /**
      * Returns a future completing with the string corresponding to the given [key] if it exists.
      * The strings will be loaded, if they are currently unloaded. If they are loaded, the result will be returned immediately.
      */

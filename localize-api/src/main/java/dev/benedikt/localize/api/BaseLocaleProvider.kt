@@ -11,7 +11,7 @@ import java.util.concurrent.Executors
  * @author Benedikt Wüller
  */
 
-abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadInterval: Long = 60 * 1000L) : LocaleProvider {
+abstract class BaseLocaleProvider @JvmOverloads constructor(var unloadInterval: Long = 60 * 1000L) : LocaleProvider {
 
     private val executorService = Executors.newFixedThreadPool(1) {
         val thread = Executors.defaultThreadFactory().newThread(it)
@@ -81,16 +81,14 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
      * Makes sure the strings are loaded asynchronously if required and unloaded if no longer required.
      */
     private fun updateStrings() {
-        this.executorService.submit {
-            val isRequired = isRequired()
-            if (isRequired && isLoaded) return@submit
-            if (!isRequired && !isLoaded) return@submit
+        val isRequired = isRequired()
+        if (isRequired && isLoaded) return
+        if (!isRequired && !isLoaded) return
 
-            if (isRequired) {
-                load()
-            } else {
-                scheduleUnload()
-            }
+        if (isRequired) {
+            load()
+        } else {
+            scheduleUnload()
         }
     }
 
@@ -135,6 +133,15 @@ abstract class BaseLocaleProvider @JvmOverloads constructor(private val unloadIn
         this.unloadJob = GlobalScope.launch {
             delay(unloadInterval)
             executorService.submit(::unload)
+        }
+    }
+
+    override fun reload() {
+        this.executorService.submit {
+            synchronized(this.strings) {
+                this.unload()
+                this.updateStrings()
+            }
         }
     }
 
