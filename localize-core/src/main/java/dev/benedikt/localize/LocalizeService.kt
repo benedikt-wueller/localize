@@ -82,7 +82,8 @@ object LocalizeService {
      */
     fun setLocale(context: Any, locale: String) {
         synchronized(this.locales) {
-            this.locales[context] = LocaleProviderWrapper(locale, this.getLocaleProvider(locale))
+            val provider = this.findLocaleProvider(locale) ?: return
+            this.locales[context] = LocaleProviderWrapper(locale, provider)
         }
     }
 
