@@ -93,6 +93,11 @@
             <name>Bintray Kotlin EAP Repository</name>
             <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
     </pluginRepositories>
 
     <profiles>
@@ -118,19 +123,25 @@
 
                     <!-- Javadoc plugin -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
+                        <groupId>org.jetbrains.dokka</groupId>
+                        <artifactId>dokka-maven-plugin</artifactId>
+                        <version>1.4.30</version>
                         <executions>
                             <execution>
-                                <id>attach-javadocs</id>
+                                <phase>pre-site</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>dokka</goal>
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
-                            <source>8</source>
+                            <dokkaPlugins>
+                                <plugin>
+                                    <groupId>org.jetbrains.dokka</groupId>
+                                    <artifactId>kotlin-as-java-plugin</artifactId>
+                                    <version>1.4.30</version>
+                                </plugin>
+                            </dokkaPlugins>
                         </configuration>
                     </plugin>
                 </plugins>
