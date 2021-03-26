@@ -7,7 +7,7 @@ A stupid simple, flexible and extremely lightweight localization framework for J
 ```xml
 <dependency>
     <groupId>dev.benedikt.localize</groupId>
-    <artifactId>localize-api</artifactId>
+    <artifactId>localize-core</artifactId>
     <version>1.1.0</version>
 </dependency>
 ```
